@@ -13,18 +13,20 @@ from smwsync.version import Version
 from smwsync.mapping import Mapping
 import webbrowser
 from meta.mw import SMWAccess
-from meta.metamodel import Context
+from meta.metamodel import Context, Topic
 from pathlib import Path
 from colorama import init as colorama_init
 from colorama import Fore
 from colorama import Style
+from lodstorage.sparql import SPARQL
+from lodstorage.query import EndpointManager
 
 class SyncCmd:
     """
     Command line for synching
     """
     
-    def __init__(self,wikiId:str="ceur-ws",context_name:str="CrSchema",debug:bool=False):
+    def __init__(self,wikiId:str="ceur-ws",context_name:str="CrSchema",endpoint_name:str="wikidata",debug:bool=False):
         """
         Constructor
         
@@ -44,7 +46,10 @@ class SyncCmd:
             raise (f"context {context_name} not available in SMW wiki {wikiId}")
         self.mw_context=self.mw_contexts[context_name]
         self.context,self.error,self.errMsg=Context.fromWikiContext(self.mw_context, debug=self.debug)
-    
+        self.endpoints = EndpointManager.getEndpoints(lang="sparql")
+        self.endpointConf = self.endpoints.get(endpoint_name)
+        self.sparql = SPARQL(self.endpointConf.endpoint)
+        
     @classmethod
     def fromArgs(self,args)->'SyncCmd':
         """
@@ -53,7 +58,7 @@ class SyncCmd:
         Args:
             args(Object): command line arguments
         """
-        syncCmd=SyncCmd(wikiId=args.target,context_name=args.context,debug=args.debug)
+        syncCmd=SyncCmd(wikiId=args.target,context_name=args.context,endpoint_name=args.endpoint,debug=args.debug)
         return syncCmd
     
     @classmethod
@@ -68,6 +73,7 @@ class SyncCmd:
         parser.add_argument("-a","--about",help="show about info [default: %(default)s]",action="store_true")
         parser.add_argument('--context', default="CrSchema",help='context to generate from [default: %(default)s]')
         parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="show debug info [default: %(default)s]")
+        parser.add_argument("-e","--endpoint",default="wikidata",help="the SPARQL endpoint to be used [default: %(default)s]")
         parser.add_argument("-pk","--primaryKey",help="primary Key [default: %(default)s]",default="qid")
         parser.add_argument("-pkv","--primaryKeyValues",help="primary Key Values",nargs='+')
         parser.add_argument("-t", "--target", default="ceur-ws", help="wikiId of the target wiki [default: %(default)s]")
@@ -90,16 +96,6 @@ class SyncCmd:
             raise Exception(f"topic {topic_name} is not in context {self.context.name} in wiki {self.wikiId}")
         topic=self.context.topics[topic_name]
         return topic
-    
-    def getProperties(self,topic_name:str):
-        """
-        get the properties for the given topic
-        
-        Args:
-            topic_name(str): the name of the topic to get the properties for
-        """
-        topic=self.getTopic(topic_name)
-        return topic.properties
     
     def getCacheRoot(self,cache_root:str=None)->str:
         """
@@ -145,9 +141,9 @@ class SyncCmd:
     def color_msg(self,color,msg):
         print(f"{color}{msg}{Style.RESET_ALL}")
     
-    def update(self,topic_name:str,cache_path:str=None)->str:
+    def updateItemCache(self,topic_name:str,cache_path:str=None)->str:
         """
-        update the cache
+        update the item cache
         
         for the given topic name and cache_path
         
@@ -164,16 +160,62 @@ class SyncCmd:
         items=self.smwAccess.smw.query(ask_query)
         cache_path=self.getCachePath(cache_path)
         json_path=(f"{cache_path}/{topic_name}.json")
-        with open(json_path, 'w') as json_file:
-            json.dump(items, json_file)
+        with open(json_path, 'w', encoding='utf-8') as json_file:
+            json.dump(items,json_file,ensure_ascii=False, indent=2)
         return json_path,items
     
-    def sync(self,proplist):
+    def readItemsFromCache(self,topic_name,cache_path:str=None):
         """
+        read the items back from cache
         """
-        for arg in arglist:
-                if arg.startsWith("Q"): 
-                    pass       
+        cache_path=self.getCachePath(cache_path)
+        json_path=(f"{cache_path}/{topic_name}.json")
+        with open(json_path, 'r') as json_file:
+            items = json.load(json_file)
+        return items
+    
+    def showProperties(self,topic:Topic):
+        """
+        show the properties for the given Topic
+        
+        Args:
+            topic(Topic): the topic to show the properties for
+        """
+        if not topic.name in self.mapping.map_by_topic:
+            raise Exception(f"missing wikidata mapping for {topic.name} - you might want to add it to the yaml file for {self.context.name}")
+        tm=self.mapping.map_by_topic[topic.name]
+        for prop_name,prop in topic.properties.items():
+            if prop_name in tm.prop_by_smw_prop:
+                pm=tm.prop_by_smw_prop[prop_name]
+                info=f"{pm.arg}: {pm.pid_label} ({pm.pid}) → {prop.name}"
+                print(f"{info}")
+            #else:
+            # info=f"{prop_name}:{prop} ❌ - missing wikidata map entry"
+            pass
+        
+    def getValue(self,pk:str,pkValue:str,pid:str):
+        """
+        get the value for the given primary key and the given property id
+        """
+        value=None
+        if pk=="qid":
+            sparql_query=f"""SELECT ?object WHERE {{
+  wd:{pkValue} wdt:{pid} ?object .
+}}"""
+        records=self.sparql.queryAsListOfDicts(sparql_query)
+        if len(records)==1:
+            record=records[0]
+            value=record["object"]
+        return value
+    
+    def sync(self,pkValues:list,prop_arglist):
+        """
+        synchronize the given properties 
+        """
+        for arg in prop_arglist:
+            
+            pass
+                      
     
     def main(self,args):
         """
@@ -185,18 +227,14 @@ class SyncCmd:
             webbrowser.open(Version.doc_url)
         self.mapping=self.getMapping()
         if args.proplist:
-            props=self.getProperties(topic_name=args.topic)
-            #if not topic_name in self.mapping.map_dict:
-            #    raise Exception(f"missing wikidata mapping for {topic_name} - you might want to add it to the yaml file for {self.context.name}")
-            #map_dict=
-            for prop_name,prop in props.items():
-                print(f"{prop_name}:{prop}")
+            topic=self.getTopic(topic_name=args.topic)
+            self.showProperties(topic=topic)
         if args.update:
             self.color_msg(Fore.BLUE,f"updating cache for {self.context.name}:{args.topic} from wiki {self.wikiId} ...")
-            json_path,items=self.update(args.topic)
+            json_path,items=self.updateItemCache(args.topic)
             self.color_msg(Fore.BLUE,f"stored {len(items)} {args.topic} items to {json_path}")
         if args.props:
-            self.sync(args.props)
+            self.sync(args.primaryKeyValues,args.props)
 
 def main(argv=None): # IGNORE:C0111
     '''main program.'''
