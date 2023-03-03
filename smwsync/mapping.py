@@ -26,14 +26,32 @@ class TopicMapping:
         self.topic_name=topic_name
         self.prop_by_arg={}
         self.prop_by_smw_prop={}
+        self.prop_by_pid={}
         
     def add_mapping(self,propm_record:dict):
         """
         add a property map record to the mapping
         """
         propm=dacite.from_dict(data_class=PropMapping,data=propm_record)
-        self.prop_by_arg[propm.arg]=propm
+        if propm.arg:
+            self.prop_by_arg[propm.arg]=propm
         self.prop_by_smw_prop[propm.smw_prop]=propm
+        if propm.pid:
+            self.prop_by_pid[propm.pid]=propm
+            
+    def getPkSMWPropMap(self,pk:str)->PropMapping:
+        pm=None
+        if pk=="qid":
+            if not pk in self.prop_by_pid:
+                raise Exception(f"primary key arg {pk} of topic {self.topic_name}  has no mapping")
+            pm=self.prop_by_pid[pk]
+        return pm
+    
+    def getPmForArg(self,arg:str)->PropMapping:
+        if not arg in self.prop_by_arg:
+            raise Exception(f"property arg {arg} of topic {self.topic_name}  has no mapping")
+        pm=self.prop_by_arg[arg]
+        return pm
         
 
 class Mapping:
