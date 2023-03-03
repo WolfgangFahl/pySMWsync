@@ -59,10 +59,7 @@ class SyncCmd:
         Returns:
             ArgumentParser: the argument parser
         """
-        version_msg=f"v{Version.version},{Version.updated}"
-        description = f'{Version.name} - {Version.description}({version_msg})'
-
-        parser = ArgumentParser(description=description, formatter_class=RawDescriptionHelpFormatter)
+        parser = ArgumentParser(description=Version.full_description, formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument("-a","--about",help="show about info [default: %(default)s]",action="store_true")
         parser.add_argument('--context', default="CrSchema",help='context to generate from [default: %(default)s]')
         parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="show debug info [default: %(default)s]")
@@ -70,7 +67,7 @@ class SyncCmd:
         parser.add_argument("-u", "--update",action="store_true",help="update the local cache")
         parser.add_argument("--topic",help="the topic to work with [default: %(default)s]",default="Scholar")
         parser.add_argument("--props",action="store_true",help="show the properties")
-        parser.add_argument("-V", "--version", action='version', version=version_msg)
+        parser.add_argument("-V", "--version", action='version', version=Version.version_msg)
         return parser
     
     def getTopic(self,topic_name:str):
@@ -132,7 +129,7 @@ class SyncCmd:
         command line handling
         """
         if args.about:
-            print(self.description)
+            print(Version.description)
             print(f"see {Version.doc_url}")
             webbrowser.open(Version.doc_url)
         if args.props:

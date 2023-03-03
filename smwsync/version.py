@@ -12,13 +12,15 @@ class Version(object):
     version = smwsync.__version__
     date = '2023-03-03'
     updated = '2023-03-03'
-    description = 'synchronize Semantic MediaWiki content e.g. with wikidata',
+    description = 'synchronize Semantic MediaWiki content e.g. with wikidata'
     
     authors = 'Wolfgang Fahl'
     
     doc_url="https://wiki.bitplan.com/index.php/pySMWSync"
     chat_url="https://github.com/WolfgangFahl/pySMWSync/discussions"
     cm_url="https://github.com/WolfgangFahl/pySMWSync"
+    version_msg=f"v{version},{updated}"
+    full_description = f'{name} - {description}({version_msg})'
 
     license = f'''Copyright 2023 contributors. All rights reserved.
 
