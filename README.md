@@ -10,7 +10,7 @@ synchronize Semantic MediaWiki content e.g. with wikidata
 [![License](https://img.shields.io/github/license/WolfgangFahl/pySMWSync.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## Introduction
-pySMWSync is a python library to create synchronize a semantic MediaWiki with e.g. wikidata or another Semantic MediaWiki
+pySMWSync is a python library to synchronize property values of a semantic MediaWiki with e.g. wikidata or another Semantic MediaWiki
 
 ## Docs and Tutorials
 [Wiki](https://wiki.bitplan.com/index.php/pySMWSync)

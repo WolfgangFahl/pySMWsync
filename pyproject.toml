@@ -18,7 +18,9 @@ dependencies = [
 	 # https://pypi.org/project/py-3rdparty-mediawiki/
      'py-3rdparty-mediawiki>=0.9.1',
      # https://github.com/WolfgangFahl/pyMetaModel
-     'pyMetaModel>=0.2.3'
+     'pyMetaModel>=0.2.3',
+     # https://pypi.org/project/colorama/
+     'colorama'
 ]
 
 requires-python = ">=3.8"

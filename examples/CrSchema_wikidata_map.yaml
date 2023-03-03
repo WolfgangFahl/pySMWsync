@@ -1,0 +1,43 @@
+# list of property mappings
+# for CrSchema Scholar versus wikidata
+- topic: Scholar
+  prop_list:
+  - arg: desc
+    pid: description
+    smw_prop: description 
+  - pid: qid
+    smw_prop: wikidataId
+  - arg: dblp
+    smw_prop: dblpId
+    pid: P2456
+    pid_label: DBLP author ID
+  - arg: gnd
+    smw_prop: gndId
+    pid: P227
+    pid_label: GND ID
+  - arg: google
+    smw_prop: googleScholarUser
+    pid: P1960
+    pid_label: Google Scholar author ID
+  - arg: home
+    smw_prop: homepage
+    pid: P856
+    pid_label: official website
+  - arg: linkedin
+    smw_prop: linkedInId
+    pid: P6634
+    pid_label: LinkedIn personal profile ID
+  - arg: orcid
+    smw_prop: orcid
+    pid: P496
+    pid_label: ORCID ID
+  - arg: research
+    smw_prop: researchGate
+    pid: P2038
+    pid_label: ResearchGate profile ID
+- topic: Event
+  prop_list:
+      - arg: acronym
+        smw_prop: acronym
+        pid: P1813
+        pid_label: short name
