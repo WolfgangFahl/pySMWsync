@@ -4,13 +4,22 @@ Created on 2023-03-03
 @author: wf
 '''
 from smwsync.synccmd import SyncCmd
-from tests.basetest import Basetest
+from tests.basemwtest import BaseMediawikiTest
 import json
 import os
-class TestSyncCmd(Basetest):
+
+class TestSyncCmd(BaseMediawikiTest):
     """
     test the synchronization command line
     """
+    
+    def setUp(self, debug=False, profile=True):
+        """
+        setUp
+        """
+        BaseMediawikiTest.setUp(self, debug=debug, profile=profile)
+        for wikiId in ["ceur-ws"]:
+            self.getSMWAccess(wikiId, save=True)
     
     def testProps(self):
         """
