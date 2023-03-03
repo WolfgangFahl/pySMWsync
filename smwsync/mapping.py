@@ -54,5 +54,5 @@ class Mapping:
             for propm_record in map_record["prop_list"]:
                 topic_map.add_mapping(propm_record)
             self.map_by_topic[topic_map.topic_name]=topic_map
-            pass
+        pass
         

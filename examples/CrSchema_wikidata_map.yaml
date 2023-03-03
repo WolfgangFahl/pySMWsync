@@ -4,6 +4,7 @@
   prop_list:
   - arg: desc
     pid: description
+    pid_label: description
     smw_prop: description 
   - pid: qid
     smw_prop: wikidataId
