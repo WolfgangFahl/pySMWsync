@@ -7,7 +7,7 @@
     pid_label: description
     smw_prop: description 
   - pid: qid
-    smw_prop: wikidataId
+    smw_prop: wikiDataId
   - arg: dblp
     smw_prop: dblpId
     pid: P2456
