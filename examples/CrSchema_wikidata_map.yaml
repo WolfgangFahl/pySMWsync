@@ -44,3 +44,11 @@
       smw_prop: acronym
       pid: P1813
       pid_label: short name
+    - arg: home
+      smw_prop: homepage
+      pid: P856
+      pid_label: official website
+    - arg: country
+      smw_prop: country
+      pid: P17
+      pid_label: country
