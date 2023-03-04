@@ -8,7 +8,6 @@ from tests.basemwtest import BaseMediawikiTest
 import json
 import os
 from pathlib import Path
-from lodstorage.sparql import SPARQL
 
 class TestSyncCmd(BaseMediawikiTest):
     """
@@ -30,9 +29,9 @@ class TestSyncCmd(BaseMediawikiTest):
         debug=self.debug
         debug=True
         syncCmd=SyncCmd("ceur-ws",debug=debug)
-        props=syncCmd.getProperties("Scholar")
+        topic=syncCmd.getTopic("Scholar")
         if debug:
-            print(json.dumps(props,indent=2,default=str))
+            print(json.dumps(topic.properties,indent=2,default=str))
             
     def testUpdateItemCache(self):
         """
