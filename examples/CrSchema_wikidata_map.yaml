@@ -38,7 +38,9 @@
     pid_label: ResearchGate profile ID
 - topic: Event
   prop_list:
-      - arg: acronym
-        smw_prop: acronym
-        pid: P1813
-        pid_label: short name
+    - pid: qid
+      smw_prop: wikidataid
+    - arg: acronym
+      smw_prop: acronym
+      pid: P1813
+      pid_label: short name
