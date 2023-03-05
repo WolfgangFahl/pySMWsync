@@ -229,12 +229,18 @@ class SyncCmd:
         value=None
         if pk=="qid":
             if pid=="description" or pid=="label":
-                label,description=WikidataItem.getLabelAndDescription(self.sparql, itemId=pkValue,lang=self.lang)
-                if pid=="description":
-                    value=description
-                else:
-                    value=label
-                pass
+                value=None
+                try:
+                    label,description=WikidataItem.getLabelAndDescription(self.sparql, itemId=pkValue,lang=self.lang)
+                    if pid=="description":
+                        value=description
+                    else:
+                        value=label
+                    pass
+                except Exception as ex:
+                    # make sure we only ignore "failed"
+                    if not "failed" in str(ex):
+                        raise ex
             else:
                 sparql_query=f"""SELECT ?object WHERE {{
       wd:{pkValue} wdt:{pid} ?object .
@@ -289,6 +295,8 @@ class SyncCmd:
             for sync_item in sync_items:
                 pk_value=sync_item[pk_map.smw_prop]
                 wd_value=self.getValue(pk, pk_value, pm.pid)
+                if wd_value is None:
+                    wd_value=""
                 page_title=sync_item[tm.topic_name]
                 msg=f"updating {page_title} {pm.smw_prop} to {wd_value} from wikidata {pk_value}"
                 self.color_msg(Fore.BLUE,msg)
@@ -334,9 +342,6 @@ def main(argv=None): # IGNORE:C0111
         argv=sys.argv[1:]
         
     try:
-        # make sure unclosed socket warnings are not shown 
-        warnings.simplefilter("ignore", ResourceWarning)
- 
         parser=SyncCmd.getArgParser()
         args = parser.parse_args(argv)
         if len(argv) < 1:
