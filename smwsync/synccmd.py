@@ -4,6 +4,7 @@ Created on 2023-03-03
 @author: wf
 '''
 import json
+import re
 import os
 import sys
 from argparse import ArgumentParser
@@ -21,6 +22,7 @@ from colorama import Style
 from lodstorage.sparql import SPARQL
 from lodstorage.query import EndpointManager
 from wikibot3rd.wikipush import WikiPush
+from lodstorage.trulytabular import WikidataItem
 
 class SyncCmd:
     """
@@ -39,6 +41,7 @@ class SyncCmd:
             debug(bool): if True switch debugging on
         """
         colorama_init()
+        self.lang="en"
         self.wikiId=wikiId
         self.debug=debug
         self.dry=dry
@@ -210,13 +213,22 @@ class SyncCmd:
         """
         value=None
         if pk=="qid":
-            sparql_query=f"""SELECT ?object WHERE {{
-  wd:{pkValue} wdt:{pid} ?object .
-}}"""
-        records=self.sparql.queryAsListOfDicts(sparql_query)
-        if len(records)==1:
-            record=records[0]
-            value=record["object"]
+            if pid=="description" or pid=="label":
+                label,description=WikidataItem.getLabelAndDescription(self.sparql, itemId=pkValue,lang=self.lang)
+                if pid=="description":
+                    value=description
+                else:
+                    value=label
+                pass
+            else:
+                sparql_query=f"""SELECT ?object WHERE {{
+      wd:{pkValue} wdt:{pid} ?object .
+    }}"""
+                records=self.sparql.queryAsListOfDicts(sparql_query)
+                if len(records)==1:
+                    record=records[0]
+                    value=record["object"]
+                    value=re.sub(r"http://www.wikidata.org/entity/(.*)",r"\1",value)
         return value
     
     def filterItems(self,items:list,pk_prop:str,pk_values:list)->list:
