@@ -7,32 +7,28 @@
   - arg: desc
     pid: description
     pid_label: description
-    smw_prop: description 
+    smw_prop: description
   - smw_prop: title
     pid: P1476
     arg: title
     pid_label: title
-- topic: Session
-  prop_list:
-  - smw_prop: title
-    pid: P?
-    arg: title
-    pid_label: null
+  - arg: acronym
+    smw_prop: acronym
+    pid: P1813
+    pid_label: short name
 - topic: Paper
   prop_list:
-  - smw_prop: id
-    pid: P?
-    arg: id
-    pid_label: null
+  - pid: qid
+    smw_prop: wikidataid
+  - arg: desc
+    pid: description
+    pid_label: description
+    smw_prop: description
   - smw_prop: title
-    pid: P?
+    pid: P1476
     arg: title
-    pid_label: null
-  - smw_prop: authors
-    pid: P?
-    arg: authors
-    pid_label: null
+    pid_label: title
   - smw_prop: pdfUrl
-    pid: P?
+    pid: P953
     arg: pdfUrl
-    pid_label: null
+    pid_label: full work available at URL
