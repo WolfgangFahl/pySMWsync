@@ -21,6 +21,8 @@ class TestSyncCmd(BaseMediawikiTest):
         BaseMediawikiTest.setUp(self, debug=debug, profile=profile)
         for wikiId in ["ceur-ws"]:
             self.getSMWAccess(wikiId, save=True)
+        self.example_path=str(Path(__file__).parent.parent)+"/examples"
+         
     
     def testProps(self):
         """
@@ -54,9 +56,8 @@ class TestSyncCmd(BaseMediawikiTest):
         """
         debug=self.debug
         #debug=True
-        example_path=str(Path(__file__).parent.parent)+"/examples"
         syncCmd=SyncCmd("ceur-ws",debug=debug)
-        mapping=syncCmd.getMapping(example_path)
+        mapping=syncCmd.getMapping(self.example_path)
         if debug:
             print(json.dumps(mapping.map_list,indent=2,default=str))
         self.assertEqual(2,len(mapping.map_list))
@@ -73,3 +74,20 @@ class TestSyncCmd(BaseMediawikiTest):
             print(value)
         self.assertEqual("haydar-akyuerek",value)
         
+    def testQueryByArg(self):
+        """
+        query by arguments
+        """
+        debug=True
+        syncCmd=SyncCmd("ceur-ws",debug=debug)
+        testParams=[("Scholar","Q54303353"),("EventSeries","Q105491257"),("Event","Q48027931")]
+        for testParam in testParams:
+            with self.subTest(testParam=testParam):
+                topic_name,qid=testParam
+                mapping=syncCmd.getMapping(self.example_path)
+                tm=mapping.map_by_topic[topic_name]
+                label=syncCmd.getValue("qid",qid,"label")
+                for arg,pm in tm.prop_by_arg.items():
+                    value=syncCmd.getValue("qid",qid,pm.pid)
+                    if debug:
+                        print(f"{label}({qid}):{pm.smw_prop}({arg})={value}")
