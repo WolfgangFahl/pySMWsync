@@ -50,7 +50,7 @@ class SyncCmd:
         self.context_name=context_name
         self.mw_contexts=self.smwAccess.getMwContexts()
         if not context_name in self.mw_contexts:
-            raise (f"context {context_name} not available in SMW wiki {wikiId}")
+            raise Exception(f"context {context_name} not available in SMW wiki {wikiId}")
         self.mw_context=self.mw_contexts[context_name]
         self.context,self.error,self.errMsg=Context.fromWikiContext(self.mw_context, debug=self.debug)
         self.endpoints = EndpointManager.getEndpoints(lang="sparql")
@@ -91,6 +91,7 @@ class SyncCmd:
         parser.add_argument("-V", "--version", action='version', version=Version.version_msg)
         parser.add_argument("-p","--props",help="properties to sync",nargs="+")
         parser.add_argument("-pm","--propertyMap",help="the yaml property map")
+        parser.add_argument("-cpm","--createPropertyMap",help="create the yaml property map")
         return parser
     
     def getTopic(self,topic_name:str):
@@ -144,6 +145,19 @@ class SyncCmd:
         cache_root=self.getCacheRoot(cache_root)
         yaml_path=f"{cache_root}/{self.context.name}_wikidata_map.yaml"
         mapping.fromYaml(yaml_path)
+        return mapping
+    
+    def createMapping(self)->Mapping:
+        """
+        create a mapping for my context
+        """
+        mapping=Mapping()
+        for topic_name,topic in self.context.topics.items():
+            topic_map=TopicMapping(topic_name)
+            for prop_name,_prop in topic.properties.items():
+                pm=PropMapping(smw_prop=prop_name,arg=prop_name,pid="P?")
+                topic_map.add_mapping(pm)
+            mapping.map_by_topic[topic_map.topic_name]=topic_map
         return mapping
     
     def color_msg(self,color,msg:str):
@@ -298,17 +312,21 @@ class SyncCmd:
             print(Version.description)
             print(f"see {Version.doc_url}")
             webbrowser.open(Version.doc_url)
-        self.mapping=self.getMapping()
-        topic=self.getTopic(topic_name=args.topic)
-        if args.proplist:
-            self.showProperties(topic=topic)
-        if args.update:
-            self.color_msg(Fore.BLUE,f"updating cache for {self.context.name}:{topic.name} from wiki {self.wikiId} ...")
-            json_path,items=self.updateItemCache(topic.name)
-            self.color_msg(Fore.BLUE,f"stored {len(items)} {topic.name} items to {json_path}")
-        if args.props:
-            self.sync(topic=topic,pk=args.primaryKey,pk_values=args.primaryKeyValues,prop_arglist=args.props)
-
+        elif args.createPropertyMap:
+            mapping=self.createMapping()
+            mapping.toYaml(args.createPropertyMap)
+        else:  
+            self.mapping=self.getMapping()
+            topic=self.getTopic(topic_name=args.topic)
+            if args.proplist:
+                self.showProperties(topic=topic)
+            if args.update:
+                self.color_msg(Fore.BLUE,f"updating cache for {self.context.name}:{topic.name} from wiki {self.wikiId} ...")
+                json_path,items=self.updateItemCache(topic.name)
+                self.color_msg(Fore.BLUE,f"stored {len(items)} {topic.name} items to {json_path}")
+            if args.props:
+                self.sync(topic=topic,pk=args.primaryKey,pk_values=args.primaryKeyValues,prop_arglist=args.props)
+      
 def main(argv=None): # IGNORE:C0111
     '''main program.'''
 
@@ -317,7 +335,7 @@ def main(argv=None): # IGNORE:C0111
         
     try:
         # make sure unclosed socket warnings are not shown 
-        warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
+        warnings.simplefilter("ignore", ResourceWarning)
  
         parser=SyncCmd.getArgParser()
         args = parser.parse_args(argv)

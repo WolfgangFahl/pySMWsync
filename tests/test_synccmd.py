@@ -4,6 +4,7 @@ Created on 2023-03-03
 @author: wf
 '''
 from smwsync.synccmd import SyncCmd
+from smwsync.mapping import Mapping
 from tests.basemwtest import BaseMediawikiTest
 import json
 import os
@@ -62,6 +63,25 @@ class TestSyncCmd(BaseMediawikiTest):
             print(json.dumps(mapping.map_list,indent=2,default=str))
         self.assertEqual(3,len(mapping.map_list))
         self.assertEqual(3,len(mapping.map_by_topic))
+        
+    def testCreateMapping(self):
+        """
+        test create property map
+        """
+        debug=self.debug
+        #debug=True
+        syncCmd=SyncCmd("ceur-ws",context_name="CeurwsSchema",debug=debug)
+        mapping=syncCmd.createMapping()
+        if debug:
+            print(json.dumps(mapping.map_by_topic,indent=2,default=str))
+        yaml_path="/tmp/CeurwsSchema_wikidata_map.yaml"
+        mapping.toYaml(yaml_path)
+        mapping_r=Mapping()
+        mapping_r.fromYaml(yaml_path)
+        if debug:
+            print(json.dumps(mapping_r.map_by_topic,indent=2,default=str))
+        self.assertEqual(str(mapping.map_by_topic),str(mapping_r.map_by_topic))
+        pass
         
     def testQuery(self):
         """
