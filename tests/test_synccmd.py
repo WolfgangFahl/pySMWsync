@@ -60,8 +60,8 @@ class TestSyncCmd(BaseMediawikiTest):
         mapping=syncCmd.getMapping(self.example_path)
         if debug:
             print(json.dumps(mapping.map_list,indent=2,default=str))
-        self.assertEqual(2,len(mapping.map_list))
-        self.assertEqual(2,len(mapping.map_by_topic))
+        self.assertEqual(3,len(mapping.map_list))
+        self.assertEqual(3,len(mapping.map_by_topic))
         
     def testQuery(self):
         """
