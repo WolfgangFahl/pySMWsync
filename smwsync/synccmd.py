@@ -7,6 +7,7 @@ import json
 import re
 import os
 import sys
+import warnings
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 import traceback
@@ -241,6 +242,8 @@ class SyncCmd:
             pk_prop(str): the primary key property
             pk_values(list): the list of primary key values
         """
+        if pk_values is None:
+            return items
         sync_items=[]
         for item_record in items:
             if pk_prop in item_record:
@@ -313,6 +316,9 @@ def main(argv=None): # IGNORE:C0111
         argv=sys.argv[1:]
         
     try:
+        # make sure unclosed socket warnings are not shown 
+        warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
+ 
         parser=SyncCmd.getArgParser()
         args = parser.parse_args(argv)
         if len(argv) < 1:
