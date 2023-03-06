@@ -7,7 +7,6 @@ import json
 import re
 import os
 import sys
-import warnings
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 import traceback
@@ -185,7 +184,7 @@ class SyncCmd:
         
         """
         topic=self.getTopic(topic_name)
-        ask_query=topic.askQuery()
+        ask_query=topic.askQuery(listLimit=5000)
         items=self.smwAccess.smw.query(ask_query)
         cache_path=self.getCachePath(cache_path)
         json_path=(f"{cache_path}/{topic_name}.json")
