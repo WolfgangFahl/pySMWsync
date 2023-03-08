@@ -22,7 +22,9 @@ dependencies = [
      # https://pypi.org/project/pylodstorage/
 	 'pylodstorage>=0.4.9', 
      # https://pypi.org/project/colorama/
-     'colorama'
+     'colorama',
+     # https://github.com/tqdm/tqdm
+     'tqdm'
 ]
 
 requires-python = ">=3.8"
