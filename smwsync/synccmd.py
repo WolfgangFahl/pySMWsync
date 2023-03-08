@@ -7,6 +7,7 @@ import json
 import re
 import os
 import sys
+from tqdm import tqdm
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 import traceback
@@ -29,7 +30,10 @@ class SyncCmd:
     Command line for synching
     """
     
-    def __init__(self,wikiId:str="ceur-ws",context_name:str="CrSchema",endpoint_name:str="wikidata",dry:bool=True,debug:bool=False):
+    def __init__(self,wikiId:str="ceur-ws",context_name:str="CrSchema",
+                 endpoint_name:str="wikidata",
+                 verbose:bool=False,progress:bool=False,
+                 dry:bool=True,debug:bool=False):
         """
         Constructor
         
@@ -44,6 +48,8 @@ class SyncCmd:
         self.lang="en"
         self.wikiId=wikiId
         self.debug=debug
+        self.progress=progress
+        self.verbose=verbose
         self.dry=dry
         self.smwAccess=SMWAccess(wikiId)
         self.context_name=context_name
@@ -64,7 +70,7 @@ class SyncCmd:
         Args:
             args(Object): command line arguments
         """
-        syncCmd=SyncCmd(wikiId=args.target,context_name=args.context,endpoint_name=args.endpoint,dry=args.dry,debug=args.debug)
+        syncCmd=SyncCmd(wikiId=args.target,context_name=args.context,endpoint_name=args.endpoint,verbose=args.verbose,progress=args.progress,dry=args.dry,debug=args.debug)
         return syncCmd
     
     @classmethod
@@ -78,19 +84,21 @@ class SyncCmd:
         parser = ArgumentParser(description=Version.full_description, formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument("-a","--about",help="show about info [default: %(default)s]",action="store_true")
         parser.add_argument('--context', default="CrSchema",help='context to generate from [default: %(default)s]')
+        parser.add_argument("-cpm","--createPropertyMap",help="create the yaml property map")
         parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="show debug info [default: %(default)s]")
         parser.add_argument("--dry", action="store_true", help="dry run only - do not execute wikiedit commands but just display them")
         parser.add_argument("-e","--endpoint",default="wikidata",help="the SPARQL endpoint to be used [default: %(default)s]")
+        parser.add_argument("--progress",action="store_true",help="show progress bar")
+        parser.add_argument("-p","--props",help="properties to sync",nargs="+")
+        parser.add_argument("--proplist",action="store_true",help="show the properties")
+        parser.add_argument("-pm","--propertyMap",help="the yaml property map")
         parser.add_argument("-pk","--primaryKey",help="primary Key [default: %(default)s]",default="qid")
         parser.add_argument("-pkv","--primaryKeyValues",help="primary Key Values",nargs="+")
         parser.add_argument("-t", "--target", default="ceur-ws", help="wikiId of the target wiki [default: %(default)s]")
         parser.add_argument("-u", "--update",action="store_true",help="update the local cache")
         parser.add_argument("--topic",help="the topic to work with [default: %(default)s]",default="Scholar")
-        parser.add_argument("--proplist",action="store_true",help="show the properties")
+        parser.add_argument("--verbose",action="store_true",help="show verbose edit details")
         parser.add_argument("-V", "--version", action='version', version=Version.version_msg)
-        parser.add_argument("-p","--props",help="properties to sync",nargs="+")
-        parser.add_argument("-pm","--propertyMap",help="the yaml property map")
-        parser.add_argument("-cpm","--createPropertyMap",help="create the yaml property map")
         return parser
     
     def getTopic(self,topic_name:str):
@@ -288,7 +296,11 @@ class SyncCmd:
         pk_map=tm.getPkSMWPropMap(pk)
         sync_items=self.filterItems(items=items_dict.values(),pk_prop=pk_map.smw_prop,pk_values=pk_values)
         self.color_msg(Fore.BLUE, f"{len(sync_items)} {tm.topic_name} items to sync ...")
-        wikipush=WikiPush(None,self.wikiId,debug=self.debug)
+        wikipush=WikiPush(None,self.wikiId,debug=self.debug,verbose=self.verbose)
+        if self.progress:
+            t=tqdm(total=len(prop_arglist)*len(sync_items))
+        else:
+            t=None    
         for arg in prop_arglist:
             pm=tm.getPmForArg(arg)
             for sync_item in sync_items:
@@ -298,10 +310,13 @@ class SyncCmd:
                     wd_value=""
                 page_title=sync_item[tm.topic_name]
                 msg=f"updating {page_title} {pm.smw_prop} to {wd_value} from wikidata {pk_value}"
-                self.color_msg(Fore.BLUE,msg)
+                if self.verbose:
+                    self.color_msg(Fore.BLUE,msg)
                 cmd=f"""wikiedit -t {self.wikiId} -p "{page_title}" --template {tm.topic_name} --property {pm.smw_prop} --value "{wd_value}" -f"""
                 if self.dry:
                     print(cmd)
+                if t is not None:
+                    t.set_description(f"{page_title}→{pm.smw_prop}")
                 wikipush.edit_wikison(
                     page_titles=[page_title],
                     entity_type_name=tm.topic_name,
@@ -309,6 +324,8 @@ class SyncCmd:
                     value=wd_value,
                     force=not self.dry
                 )
+                if t is not None:
+                    t.update()
             pass
                       
     def main(self,args):
