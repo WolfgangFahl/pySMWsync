@@ -16,19 +16,47 @@
     smw_prop: acronym
     pid: P1813
     pid_label: short name
+  - arg: url
+    smw_prop: url
+    pid: P953
+    pid_label: full work available at URL
+  - arg: date
+    smw_prop: date
+    pid: P577
+    pid_label: publication date
+  - arg: dblp
+    smw_prop: dlbp
+    pid: P8978
+    pid_label: DBLP publication ID
+  - arg: urn
+    smw_prop: urn
+    pid: P4109
+    pid_label: URN-NBN
+  - arg: k10plus
+    smw_prop: k10plus
+    pid: P6721
+    pid_label: K10plus PPN ID
+- topic: Session
+  prop_list:
+  - smw_prop: title
+    pid: P?
+    arg: title
+    pid_label: null
 - topic: Paper
   prop_list:
-  - pid: qid
-    smw_prop: wikidataid
-  - arg: desc
-    pid: description
-    pid_label: description
-    smw_prop: description
+  - smw_prop: id
+    pid: P?
+    arg: id
+    pid_label: null
   - smw_prop: title
-    pid: P1476
+    pid: P?
     arg: title
-    pid_label: title
+    pid_label: null
+  - smw_prop: authors
+    pid: P?
+    arg: authors
+    pid_label: null
   - smw_prop: pdfUrl
-    pid: P953
+    pid: P?
     arg: pdfUrl
-    pid_label: full work available at URL
+    pid_label: null

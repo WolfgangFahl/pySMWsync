@@ -197,7 +197,7 @@ class SyncCmd:
         cache_path=self.getCachePath(cache_path)
         json_path=(f"{cache_path}/{topic_name}.json")
         with open(json_path, 'w', encoding='utf-8') as json_file:
-            json.dump(items,json_file,ensure_ascii=False, indent=2)
+            json.dump(items,json_file,ensure_ascii=False, default=str,indent=2)
         return json_path,items
     
     def readItemsFromCache(self,topic_name,cache_path:str=None):
@@ -256,7 +256,10 @@ class SyncCmd:
                 if len(records)==1:
                     record=records[0]
                     value=record["object"]
-                    value=re.sub(r"http://www.wikidata.org/entity/(.*)",r"\1",value)
+                    if isinstance(value,str):
+                        value=re.sub(r"http://www.wikidata.org/entity/(.*)",r"\1",value)
+                    else:
+                        value=str(value)
         return value
     
     def filterItems(self,items:list,pk_prop:str,pk_values:list)->list:
