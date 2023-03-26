@@ -94,6 +94,20 @@ class TestSyncCmd(BaseMediawikiTest):
             print(value)
         self.assertEqual("haydar-akyuerek",value)
         
+    def testIssue8(self):
+        """
+        https://github.com/WolfgangFahl/pySMWsync/issues/8
+        use preferredRank and english language for multiple entries such as homepages
+        """
+        debug=self.debug
+        #debug=True
+        syncCmd=SyncCmd("ceur-ws",debug=debug)
+        value=syncCmd.getValue("qid","Q752663","P856")
+        if debug:
+            print(value)
+        self.assertEqual("http://www.tudelft.nl/",value)
+        
+        
     def testQueryByArg(self):
         """
         query by arguments

@@ -249,13 +249,20 @@ class SyncCmd:
                     if not "failed" in str(ex):
                         raise ex
             else:
-                sparql_query=f"""SELECT ?object WHERE {{
-      wd:{pkValue} wdt:{pid} ?object .
-    }}"""
+                sparql_query=f"""SELECT * {{ 
+  wd:{pkValue} wdt:{pid} ?value . 
+}}"""
+                # see https://www.wikidata.org/wiki/Help:Ranking
+                #sparql_query=f"""SELECT ?value {{ 
+#  wd:{pkValue} p:{pid} ?st . 
+#  ?st ps:P569 ?value . 
+# ?st wikibase:rank wikibase:PreferredRank  
+#}}"""
+                
                 records=self.sparql.queryAsListOfDicts(sparql_query)
-                if len(records)==1:
+                if len(records)>=1:
                     record=records[0]
-                    value=record["object"]
+                    value=record["value"]
                     if isinstance(value,str):
                         value=re.sub(r"http://www.wikidata.org/entity/(.*)",r"\1",value)
                     else:
