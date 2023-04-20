@@ -8,9 +8,9 @@
     pid: description
     pid_label: description
     smw_prop: description
-  - smw_prop: title
+  - arg: title
+    smw_prop: title
     pid: P1476
-    arg: title
     pid_label: title
   - arg: acronym
     smw_prop: acronym
@@ -36,27 +36,15 @@
     smw_prop: k10plus
     pid: P6721
     pid_label: K10plus PPN ID
-- topic: Session
-  prop_list:
-  - smw_prop: title
-    pid: P?
-    arg: title
-    pid_label: null
 - topic: Paper
   prop_list:
-  - smw_prop: id
-    pid: P?
-    arg: id
-    pid_label: null
-  - smw_prop: title
-    pid: P?
-    arg: title
-    pid_label: null
-  - smw_prop: authors
-    pid: P?
-    arg: authors
-    pid_label: null
-  - smw_prop: pdfUrl
-    pid: P?
-    arg: pdfUrl
-    pid_label: null
+  - pid: qid
+    smw_prop: wikidataid
+  - arg: desc
+    pid: description
+    pid_label: description
+    smw_prop: description
+  - arg: title
+    pid: P1476
+    smw_prop: title
+    pid_label: title

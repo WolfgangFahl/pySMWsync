@@ -59,8 +59,13 @@ class TopicMapping:
         Returns:
             PropMapping: the property Mapping created and added
         """
-        propm=dacite.from_dict(data_class=PropMapping,data=propm_record)
-        self.add_mapping(propm)
+        propm=None
+        try:
+            propm=dacite.from_dict(data_class=PropMapping,data=propm_record)
+            self.add_mapping(propm)
+        except Exception as ex:
+            print(f"Warning property mapping {propm_record} could not be added: {str(ex)}")
+            pass
         return propm
         
     
