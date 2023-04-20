@@ -1,5 +1,6 @@
 # list of property mappings
 # for CrSchema Scholar versus wikidata
+# updated by WF 2023-04-20
 - topic: Scholar
   prop_list:
   - arg: desc
@@ -52,9 +53,9 @@
       smw_prop: homepage
       pid: P856
       pid_label: official website
-    - smw_prop: title
+    - arg: title
       pid: P1476
-      arg: title
+      smw_prop: title
       pid_label: title
     - arg: country
       smw_prop: country
@@ -72,9 +73,9 @@
     smw_prop: homepage
     pid: P856
     pid_label: official website
-  - smw_prop: title
+  - arg: title
     pid: P1476
-    arg: title
+    smw_prop: title
     pid_label: title
 - topic: Paper
   prop_list:
@@ -104,7 +105,7 @@
     smw_prop: homepage
     pid: P856
     pid_label: official website
-  - smw_prop: title
-    pid: P1476
-    arg: title
-    pid_label: title
+  - arg: inception
+    smw_prop: inception
+    pid: P571
+    pid_label: inception
