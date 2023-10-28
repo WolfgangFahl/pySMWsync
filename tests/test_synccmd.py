@@ -105,7 +105,7 @@ class TestSyncCmd(BaseMediawikiTest):
         value=syncCmd.getValue("qid","Q752663","P856")
         if debug:
             print(value)
-        self.assertEqual("http://www.tudelft.nl/",value)
+        self.assertEqual("https://www.tudelft.nl/",value)
         
         
     def testQueryByArg(self):
