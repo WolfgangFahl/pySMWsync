@@ -11,7 +11,7 @@ class Version(object):
     name = "pySMWSync"
     version = smwsync.__version__
     date = '2023-03-03'
-    updated = '2023-03-03'
+    updated = '2024-03-19'
     description = 'python library to synchronize property values of a semantic MediaWiki with e.g. wikidata or another Semantic MediaWiki'
     
     authors = 'Wolfgang Fahl'
