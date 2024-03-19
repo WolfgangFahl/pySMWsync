@@ -23,7 +23,7 @@ from colorama import Style
 from lodstorage.sparql import SPARQL
 from lodstorage.query import EndpointManager
 from wikibot3rd.wikipush import WikiPush
-from lodstorage.trulytabular import WikidataItem
+from ez_wikidata.wikidata import WikidataItem
 
 class SyncCmd:
     """
