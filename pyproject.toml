@@ -16,11 +16,11 @@ readme = "README.md"
 license= "Apache-2.0"
 dependencies = [
 	 # https://pypi.org/project/py-3rdparty-mediawiki/
-     'py-3rdparty-mediawiki>=0.9.3',
+     'py-3rdparty-mediawiki>=0.11.4',
      # https://github.com/WolfgangFahl/pyMetaModel
-     'pyMetaModel>=0.2.4',
+     'pyMetaModel>=0.3.4',
      # https://pypi.org/project/pylodstorage/
-	 'pylodstorage>=0.9.2', 
+	 'pylodstorage>=0.9.2',
      # https://pypi.org/project/colorama/
      'colorama',
      # https://github.com/tqdm/tqdm
@@ -37,6 +37,7 @@ classifiers=[
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Intended Audience :: Developers",
@@ -59,9 +60,11 @@ test = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = [
-  "smwsync",
-]
+only-include = ["smwsync"]
+
+[tool.hatch.build.targets.wheel.sources]
+"smwsync" = "smwsync"
+
 
 [project.scripts]
 smwsync = "smwsync.synccmd:main"
