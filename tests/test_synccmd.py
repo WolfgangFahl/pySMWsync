@@ -116,7 +116,7 @@ class TestSyncCmd(BaseMediawikiTest):
         if self.inPublicCI():
             self.skipTest("no access to intranet")
         syncCmd=SyncCmd("media",context_name="CrSchema",debug=debug)
-        query=syncCmd.generateQuery(topic_name="Scholar")
+        query=syncCmd.generate_query(topic_name="Scholar")
         yaml_str=query.to_yaml()
         if debug:
             print(yaml_str)
