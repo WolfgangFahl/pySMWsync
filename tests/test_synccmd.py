@@ -31,7 +31,6 @@ class TestSyncCmd(BaseMediawikiTest):
         test property query
         """
         debug = self.debug
-        debug = True
         syncCmd = SyncCmd("ceur-ws", debug=debug)
         topic = syncCmd.getTopic("Scholar")
         if debug:
@@ -41,7 +40,7 @@ class TestSyncCmd(BaseMediawikiTest):
         """
         test updating the cache
         """
-        debug = False
+        debug = self.debug
         syncCmd = SyncCmd("ceur-ws", debug=debug)
         cache_path = "/tmp/wikisync"
         json_path, items = syncCmd.updateItemCache("Scholar", cache_path)
@@ -108,11 +107,25 @@ class TestSyncCmd(BaseMediawikiTest):
             print(value)
         self.assertTrue(value.startswith("https://www.tudelft.nl"))
 
+    def testGenerateNamedParameterizedQuery(self):
+        """
+        test generating a name Parameterized Query
+        """
+        debug=self.debug
+        debug=True
+        if self.inPublicCI():
+            self.skipTest("no access to intranet")
+        syncCmd=SyncCmd("media",context_name="CrSchema",debug=debug)
+        query=syncCmd.generateQuery(topic_name="Scholar")
+        yaml_str=query.to_yaml()
+        if debug:
+            print(yaml_str)
+
     def testQueryByArg(self):
         """
         query by arguments
         """
-        debug = True
+        debug = self.debug
         syncCmd = SyncCmd("ceur-ws", debug=debug)
         testParams = [
             ("Scholar", "Q54303353"),
