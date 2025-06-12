@@ -1,0 +1,59 @@
+#
+# Sample Queries for pyLodStorage library
+#
+# WF 2020-08-22
+'ScholarByQids':
+    name: ScholarByQids
+    sparql: |-
+      # pySMWSync generated query for Scholar
+      SELECT DISTINCT ?entity
+        ?dblpId # dblpId:DBLP author ID
+        ?gndId # gndId:GND ID
+        ?googleScholarUser # googleScholarUser:Google Scholar author ID
+        ?homepage # homepage:official website
+        ?linkedInId # linkedInId:LinkedIn personal profile ID
+        ?orcid # orcid:ORCID ID
+        ?researchGate # researchGate:ResearchGate profile ID
+      WHERE {
+        VALUES ?entity { {{qids}} }
+        OPTIONAL { ?entity wdt:P2456 ?dblpId . }  # dblpId:DBLP author ID
+        OPTIONAL { ?entity wdt:P227 ?gndId . }  # gndId:GND ID
+        OPTIONAL { ?entity wdt:P1960 ?googleScholarUser . }  # googleScholarUser:Google Scholar author ID
+        OPTIONAL { ?entity wdt:P856 ?homepage . }  # homepage:official website
+        OPTIONAL { ?entity wdt:P6634 ?linkedInId . }  # linkedInId:LinkedIn personal profile ID
+        OPTIONAL { ?entity wdt:P496 ?orcid . }  # orcid:ORCID ID
+        OPTIONAL { ?entity wdt:P2038 ?researchGate . }  # researchGate:ResearchGate profile ID
+      }
+    lang: sparql
+    endpoint: https://query.wikidata.org/sparql
+    database: blazegraph
+    title: Get Scholar data by Wikidata QIDs
+    description: Retrieve Scholar properties from Wikidata using QID parameters
+    debug: false
+    param_list:
+    - name: qids
+      type: str
+      description: Space-separated Wikidata QIDs (e.g., 'wd:Q123456 wd:Q789012' or just
+        'wd:Q123456')
+    output:
+    - name: dblpId
+      type: str
+      description: DBLP author ID
+    - name: gndId
+      type: str
+      description: GND ID
+    - name: googleScholarUser
+      type: str
+      description: Google Scholar author ID
+    - name: homepage
+      type: str
+      description: official website
+    - name: linkedInId
+      type: str
+      description: LinkedIn personal profile ID
+    - name: orcid
+      type: str
+      description: ORCID ID
+    - name: researchGate
+      type: str
+      description: ResearchGate profile ID

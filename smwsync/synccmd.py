@@ -375,7 +375,60 @@ class SyncCmd:
                     sync_items.append(item_record)
         return sync_items
 
-    def generateQuery(self, topic_name: str) -> 'Query':
+    def build_output_params(self, tm: 'TopicMapping') -> list:
+        """
+        Build output parameters for the given topic mapping.
+
+        Args:
+            tm: TopicMapping object containing property mappings
+
+        Returns:
+            list: List of Param objects for output parameters
+        """
+        output_params = []
+        for _prop_name, pm in tm.prop_by_smw_prop.items():
+            if pm.pid and pm.pid != "qid" and pm.pid != "description":
+                output_param = Param(
+                    name=pm.smw_prop,
+                    type="str",
+                    description=pm.pid_label if hasattr(pm, 'pid_label') else pm.smw_prop
+                )
+                output_params.append(output_param)
+        return output_params
+
+    def build_sparql_query(self, topic_name: str,tm: 'TopicMapping') -> str:
+        """
+        Build a formatted SPARQL query for the given topic mapping.
+
+        Args:
+            tm: TopicMapping object containing property mappings
+
+        Returns:
+            str: Formatted SPARQL query string
+        """
+        query = f"""# pySMWSync generated query for {topic_name}
+SELECT DISTINCT ?entity"""
+
+        for prop_name, pm in tm.prop_by_smw_prop.items():
+            if pm.pid and pm.pid != "qid" and pm.pid != "description":
+                var_name = f"?{pm.smw_prop}"
+                comment = pm.pid_label if hasattr(pm, 'pid_label') else pm.smw_prop
+                query += f"\n  {var_name} # {prop_name}:{comment}"
+
+        query += "\nWHERE {"
+        query += "\n  VALUES ?entity { {{qids}} }"
+
+        for prop_name, pm in tm.prop_by_smw_prop.items():
+            if pm.pid and pm.pid != "qid" and pm.pid != "description":
+                var_name = f"?{pm.smw_prop}"
+                comment = pm.pid_label if hasattr(pm, 'pid_label') else pm.smw_prop
+                query += f"\n  OPTIONAL {{ ?entity wdt:{pm.pid} {var_name} . }}  # {prop_name}:{comment}"
+
+        query += "\n}"
+
+        return query
+
+    def generate_query(self, topic_name: str) -> 'Query':
         """
         Generate a named parameterized SPARQL query for the given topic.
 
@@ -385,7 +438,6 @@ class SyncCmd:
         Returns:
             Query: A parameterized SPARQL query object
         """
-        topic = self.getTopic(topic_name)
         mapping = self.getMapping()
 
         if topic_name not in mapping.map_by_topic:
@@ -393,30 +445,8 @@ class SyncCmd:
 
         tm = mapping.map_by_topic[topic_name]
 
-        # Build SELECT clause and WHERE clauses
-        select_vars = ["?entity"]
-        where_clauses = []
-        output_params = []
-
-        for _prop_name, pm in tm.prop_by_smw_prop.items():
-            if pm.pid and pm.pid != "qid" and pm.pid != "description":
-                var_name = f"?{pm.smw_prop}"
-                select_vars.append(var_name)
-                where_clauses.append(f"  OPTIONAL {{ ?entity wdt:{pm.pid} {var_name} . }}")
-
-                output_param = Param(
-                    name=pm.smw_prop,
-                    type="str",
-                    description=pm.pid_label if hasattr(pm, 'pid_label') else pm.smw_prop
-                )
-                output_params.append(output_param)
-
-        # Build the complete query
-        select_clause = "SELECT " + " ".join(select_vars)
-        where_clause = "WHERE {\n  VALUES ?entity { {{qids}} }\n" + "\n".join(where_clauses) + "\n}"
-
-        sparql_query = f"""{select_clause}
-    {where_clause}"""
+        output_params = self.build_output_params(tm)
+        sparql_query = self.build_sparql_query(topic_name,tm)
 
         input_param = Param(
             name="qids",
@@ -425,10 +455,9 @@ class SyncCmd:
         )
 
         query = Query(
-            name=f"{topic_name}ByQids",
             query=sparql_query,
+            name=f"{topic_name}ByQids",
             lang="sparql",
-            sparql=sparql_query,
             title=f"Get {topic_name} data by Wikidata QIDs",
             description=f"Retrieve {topic_name} properties from Wikidata using QID parameters",
             endpoint=self.endpointConf.endpoint,
