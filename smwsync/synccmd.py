@@ -15,7 +15,8 @@ from pathlib import Path
 from colorama import Fore, Style
 from colorama import init as colorama_init
 from ez_wikidata.wikidata import WikidataItem
-from lodstorage.query import EndpointManager
+from lodstorage.params import Param
+from lodstorage.query import EndpointManager, Query
 from lodstorage.sparql import SPARQL
 from meta.metamodel import Context, Topic
 from meta.mw import SMWAccess
@@ -129,6 +130,11 @@ class SyncCmd:
             "--dry",
             action="store_true",
             help="dry run only - do not execute wikiedit commands but just display them",
+        )
+        parser.add_argument(
+            "--query",
+            action="store_true",
+            help="generate a named parameterized query",
         )
         parser.add_argument(
             "-e",
@@ -368,6 +374,70 @@ class SyncCmd:
                 if item_pk_value in pk_values:
                     sync_items.append(item_record)
         return sync_items
+
+    def generateQuery(self, topic_name: str) -> 'Query':
+        """
+        Generate a named parameterized SPARQL query for the given topic.
+
+        Args:
+            topic_name (str): The topic name to generate query for
+
+        Returns:
+            Query: A parameterized SPARQL query object
+        """
+        topic = self.getTopic(topic_name)
+        mapping = self.getMapping()
+
+        if topic_name not in mapping.map_by_topic:
+            raise ValueError(f"No mapping found for topic {topic_name}")
+
+        tm = mapping.map_by_topic[topic_name]
+
+        # Build SELECT clause and WHERE clauses
+        select_vars = ["?entity"]
+        where_clauses = []
+        output_params = []
+
+        for _prop_name, pm in tm.prop_by_smw_prop.items():
+            if pm.pid and pm.pid != "qid" and pm.pid != "description":
+                var_name = f"?{pm.smw_prop}"
+                select_vars.append(var_name)
+                where_clauses.append(f"  OPTIONAL {{ ?entity wdt:{pm.pid} {var_name} . }}")
+
+                output_param = Param(
+                    name=pm.smw_prop,
+                    type="str",
+                    description=pm.pid_label if hasattr(pm, 'pid_label') else pm.smw_prop
+                )
+                output_params.append(output_param)
+
+        # Build the complete query
+        select_clause = "SELECT " + " ".join(select_vars)
+        where_clause = "WHERE {\n  VALUES ?entity { {{qids}} }\n" + "\n".join(where_clauses) + "\n}"
+
+        sparql_query = f"""{select_clause}
+    {where_clause}"""
+
+        input_param = Param(
+            name="qids",
+            type="str",
+            description="Space-separated Wikidata QIDs (e.g., 'wd:Q123456 wd:Q789012' or just 'wd:Q123456')"
+        )
+
+        query = Query(
+            name=f"{topic_name}ByQids",
+            query=sparql_query,
+            lang="sparql",
+            sparql=sparql_query,
+            title=f"Get {topic_name} data by Wikidata QIDs",
+            description=f"Retrieve {topic_name} properties from Wikidata using QID parameters",
+            endpoint=self.endpointConf.endpoint,
+            param_list=[input_param],
+            output=output_params
+        )
+
+        return query
+
 
     def sync(self, topic: Topic, pk: str, pk_values: list, prop_arglist: list):
         """
