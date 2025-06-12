@@ -266,7 +266,7 @@ class SyncCmd:
 
         """
         topic = self.getTopic(topic_name)
-        ask_query = topic.askQuery(listLimit=5000)
+        ask_query = topic.askQuery(listLimit=5000,filterShowInGrid=False)
         items = self.smwAccess.smw.query(ask_query)
         cache_path = self.getCachePath(cache_path)
         json_path = f"{cache_path}/{topic_name}.json"
@@ -327,8 +327,8 @@ class SyncCmd:
                     if not "failed" in str(ex):
                         raise ex
             else:
-                sparql_query = f"""SELECT * {{ 
-  wd:{pkValue} wdt:{pid} ?value . 
+                sparql_query = f"""SELECT * {{
+  wd:{pkValue} wdt:{pid} ?value .
 }}"""
                 # see https://www.wikidata.org/wiki/Help:Ranking
                 # sparql_query=f"""SELECT ?value {{

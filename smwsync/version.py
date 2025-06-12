@@ -14,7 +14,7 @@ class Version(object):
     name = "pySMWSync"
     version = smwsync.__version__
     date = "2023-03-03"
-    updated = "2024-03-19"
+    updated = "2025-06-12"
     description = "python library to synchronize property values of a semantic MediaWiki with e.g. wikidata or another Semantic MediaWiki"
 
     authors = "Wolfgang Fahl"
@@ -25,7 +25,7 @@ class Version(object):
     version_msg = f"v{version},{updated}"
     full_description = f"{name} - {description}({version_msg})"
 
-    license = f"""Copyright 2023 contributors. All rights reserved.
+    license = f"""Copyright 2023-2025 contributors. All rights reserved.
 
   Licensed under the Apache License 2.0
   http://www.apache.org/licenses/LICENSE-2.0
