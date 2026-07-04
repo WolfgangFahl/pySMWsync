@@ -499,9 +499,18 @@ SELECT DISTINCT ?entity"""
             for sync_item in sync_items:
                 pk_value = sync_item[pk_map.smw_prop]
                 wd_value = self.getValue(pk, pk_value, pm.pid)
-                if wd_value is None:
-                    wd_value = ""
                 page_title = sync_item[tm.topic_name]
+                if wd_value is None:
+                    # Wikidata has no value for this property - do NOT overwrite the
+                    # existing page value with an empty string (see Tool/scholarsync).
+                    if self.verbose:
+                        self.color_msg(
+                            Fore.YELLOW,
+                            f"skipping {page_title} {pm.smw_prop}: no wikidata value for {pk_value}",
+                        )
+                    if t is not None:
+                        t.update()
+                    continue
                 msg = f"updating {page_title} {pm.smw_prop} to {wd_value} from wikidata {pk_value}"
                 if self.verbose:
                     self.color_msg(Fore.BLUE, msg)
